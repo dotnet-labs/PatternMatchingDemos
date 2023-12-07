@@ -1,61 +1,50 @@
-using System;
-using System.Linq;
 using Demo.StoreExample.RulesPattern;
 
-namespace Demo.StoreExample
+namespace Demo.StoreExample;
+
+public enum LoyalYear
 {
-    public enum LoyalYear
+    None = -1,
+    Zero = 0,
+    One = 1,
+    Five = 5,
+    Ten = 10
+}
+
+public class CustomerDiscountCalculator(Customer customer, DateTime now)
+{
+    public bool IsBirthday { get; protected set; } = customer.DateOfBirth > DateTime.MinValue && customer.DateOfBirth.Day == now.Day && customer.DateOfBirth.Month == now.Month;
+    public bool IsSenior { get; protected set; } = customer.DateOfBirth > DateTime.MinValue && customer.DateOfBirth < now.AddYears(-65);
+    public bool IsVeteran { get; protected set; } = customer.IsVeteran;
+    public LoyalYear LoyalYear { get; protected set; } = GetLoyalYear(customer.DateOfFirstPurchase, now);
+
+    private static LoyalYear GetLoyalYear(DateTime? dateOfFirstPurchase, DateTime now)
     {
-        None = -1,
-        Zero = 0,
-        One = 1,
-        Five = 5,
-        Ten = 10
+        if (!dateOfFirstPurchase.HasValue)
+        {
+            return LoyalYear.None;
+        }
+
+        var purchaseYears = now.Year - dateOfFirstPurchase.Value.Year;
+        if (now.AddYears(-purchaseYears) < dateOfFirstPurchase.Value) purchaseYears--;
+        var loyalYear = Enum.GetValues(typeof(LoyalYear)).Cast<int>()
+            .OrderByDescending(x => x)
+            .First(x => x <= purchaseYears);
+        return (LoyalYear)loyalYear;
     }
 
-    public class CustomerDiscountCalculator
+    public decimal CalculateDiscountPercentage()
     {
-        public bool IsBirthday { get; protected set; }
-        public bool IsSenior { get; protected set; }
-        public bool IsVeteran { get; protected set; }
-        public LoyalYear LoyalYear { get; protected set; }
-
-        public CustomerDiscountCalculator(Customer customer, DateTime now)
+        return (LoyalYear, IsSenior, IsBirthday, IsVeteran) switch
         {
-            IsBirthday = customer.DateOfBirth > DateTime.MinValue && customer.DateOfBirth.Day == now.Day && customer.DateOfBirth.Month == now.Month;
-            IsSenior = customer.DateOfBirth > DateTime.MinValue && customer.DateOfBirth < now.AddYears(-65);
-            IsVeteran = customer.IsVeteran;
-            LoyalYear = GetLoyalYear(customer.DateOfFirstPurchase, now);
-        }
-
-        private static LoyalYear GetLoyalYear(DateTime? dateOfFirstPurchase, DateTime now)
-        {
-            if (!dateOfFirstPurchase.HasValue)
-            {
-                return LoyalYear.None;
-            }
-
-            var purchaseYears = now.Year - dateOfFirstPurchase.Value.Year;
-            if (now.AddYears(-purchaseYears) < dateOfFirstPurchase.Value) purchaseYears--;
-            var loyalYear = Enum.GetValues(typeof(LoyalYear)).Cast<int>()
-                .OrderByDescending(x => x)
-                .First(x => x <= purchaseYears);
-            return (LoyalYear)loyalYear;
-        }
-
-        public decimal CalculateDiscountPercentage()
-        {
-            return (LoyalYear, IsSenior, IsBirthday, IsVeteran) switch
-            {
-                (LoyalYear.None, _, _, _) => 0.15m,
-                (LoyalYear.One, _, _, _) => 0.1m + (IsBirthday ? 0.1m : 0m),
-                (LoyalYear.Five, _, _, _) => 0.12m + (IsBirthday ? 0.1m : 0m),
-                (LoyalYear.Ten, _, _, _) => 0.2m + (IsBirthday ? 0.1m : 0m),
-                (_, _, true, _) => 0.1m,
-                (_, _, _, true) => 0.1m,
-                (_, true, _, _) => 0.05m,
-                _ => 0m
-            };
-        }
+            (LoyalYear.None, _, _, _) => 0.15m,
+            (LoyalYear.One, _, _, _) => 0.1m + (IsBirthday ? 0.1m : 0m),
+            (LoyalYear.Five, _, _, _) => 0.12m + (IsBirthday ? 0.1m : 0m),
+            (LoyalYear.Ten, _, _, _) => 0.2m + (IsBirthday ? 0.1m : 0m),
+            (_, _, true, _) => 0.1m,
+            (_, _, _, true) => 0.1m,
+            (_, true, _, _) => 0.05m,
+            _ => 0m
+        };
     }
 }

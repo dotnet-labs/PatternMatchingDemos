@@ -1,7 +1,6 @@
-﻿namespace Demo.StoreExample.RulesPattern
+﻿namespace Demo.StoreExample.RulesPattern;
+
+public interface IDiscountCalculator
 {
-    public interface IDiscountCalculator
-    {
-        decimal CalculateDiscountPercentage(Customer customer);
-    }
+    decimal CalculateDiscountPercentage(Customer customer);
 }

@@ -1,10 +1,9 @@
-﻿namespace Demo.StoreExample.RulesPattern.Rules
+﻿namespace Demo.StoreExample.RulesPattern.Rules;
+
+public class VeteranDiscountRule : IDiscountRule
 {
-    public class VeteranDiscountRule : IDiscountRule
+    public decimal CalculateCustomerDiscount(Customer customer)
     {
-        public decimal CalculateCustomerDiscount(Customer customer)
-        {
-            return customer.IsVeteran ? 0.10m : 0;
-        }
+        return customer.IsVeteran ? 0.10m : 0;
     }
 }

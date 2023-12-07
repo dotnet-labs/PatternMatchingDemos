@@ -1,30 +1,20 @@
-﻿using System;
-using Demo.StoreExample.RulesPattern.Refactor;
+﻿using Demo.StoreExample.RulesPattern.Refactor;
 
-namespace Demo.StoreExample.RulesPattern.Rules
+namespace Demo.StoreExample.RulesPattern.Rules;
+
+public class LoyalCustomerRule(int yearsAsCustomer, decimal discount, DateTime? date = null)
+    : IDiscountRule
 {
-    public class LoyalCustomerRule : IDiscountRule
+    private readonly DateTime _date = date.ToValueOrDefault();
+
+    public decimal CalculateCustomerDiscount(Customer customer)
     {
-        private readonly int _yearsAsCustomer;
-        private readonly decimal _discount;
-        private readonly DateTime _date;
-
-        public LoyalCustomerRule(int yearsAsCustomer, decimal discount, DateTime? date = null)
+        if (customer.HasBeenLoyalForYears(yearsAsCustomer, _date))
         {
-            _yearsAsCustomer = yearsAsCustomer;
-            _discount = discount;
-            _date = date.ToValueOrDefault();
-        }
+            var birthdayRule = new BirthdayDiscountRule();
 
-        public decimal CalculateCustomerDiscount(Customer customer)
-        {
-            if (customer.HasBeenLoyalForYears(_yearsAsCustomer, _date))
-            {
-                var birthdayRule = new BirthdayDiscountRule();
-
-                return _discount + birthdayRule.CalculateCustomerDiscount(customer);
-            }
-            return 0;
+            return discount + birthdayRule.CalculateCustomerDiscount(customer);
         }
+        return 0;
     }
 }

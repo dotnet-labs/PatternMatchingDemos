@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Demo.StoreExample.RulesPattern.Rules;
 
-namespace Demo.StoreExample.RulesPattern.Rules
+public interface IDiscountRule
 {
-    public interface IDiscountRule
-    {
-        decimal CalculateCustomerDiscount(Customer customer);
-    }
+    decimal CalculateCustomerDiscount(Customer customer);
 }
